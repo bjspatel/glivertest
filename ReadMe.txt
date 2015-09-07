@@ -2,14 +2,14 @@
 
 1) Unzip web_classroom.zip file
 2) Download and Install MySQL
-3) Download and Install Node.js
-4) Open command prompt and cd to the unzipped folder "web-classroom"
-5) Run commande: source "<path_to_web-classroom>/web-classroom/mysql_script/web_classroom.sql"
+3) Create a database named "group_chat"
+4) Download and Install Node.js
+5) Open command prompt and cd to the unzipped folder "Groupchat"
 6) Run command: "npm install"
 
 ***** Steps to run server *****
-1) Open command prompt and cd to the unzipped folder "web-classroom"
-2) Run command: "node app.js"
+1) Open command prompt and cd to the unzipped folder "Groupchat"
+2) Run command: "node server.js"
 
 ***** Steps to use application *****
 1) Open browser
