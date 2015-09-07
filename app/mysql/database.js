@@ -8,8 +8,7 @@ var knex = require("knex")({
 	   user: 		config.db.username, // your database user
 	   password: 	config.db.password, // your database password
 	   database: 	config.db.databasename
-   },
-   debug: true
+   }
 });
 
 module.exports.bookshelf 	= require('bookshelf')(knex);

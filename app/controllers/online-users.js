@@ -5,13 +5,13 @@ var onlineUsers = function() {
 	this.users 	= [];
 
 	this.addUser = function(user) {
-		user.full_name = user.first_name + user.last_name;
+		user.full_name = user.first_name + " " + user.last_name;
 		this.users.push(user);
 		_.sortBy(this.users, "full_name");
 	};
 
 	this.removeUser = function(user) {
-		_.remove(this.users, "user_name", user.name);
+		_.remove(this.users, "user_name", user.user_name);
 	}
 
 	this.getAllUsers = function() {

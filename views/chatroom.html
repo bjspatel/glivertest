@@ -33,9 +33,12 @@
 			}
 		});
 
+		var typingTimeout,
+			broadcastTimeout;
 		$(document).on('keyup', '.newmessage', function(e){
 
 			if(e.which === 13 && !ctrlPressed && $(this).val() != ''){
+				clearTimeout(typingTimeout);
 				msgSocket.emit('srv_message', {
 					user:		thisUser,
 					message:	$(this).val()
@@ -45,6 +48,15 @@
 			} else if(e.which === 17) {
 				ctrlPressed = false;
 				$(this).val($(this).val() + "\n");
+			} else {
+			    if (!!typingTimeout) {
+			        clearTimeout(typingTimeout); // remove it
+			    } else {// else this is the first stroke
+			        msgSocket.emit("srv_typing", thisUser.user_name);
+				}
+			    typingTimeout = setTimeout(function() {
+			        typingTimeout = undefined;
+			    }, 1000);
 			}
 		});
 
@@ -73,9 +85,6 @@
 			$('.users').html('');
 			for(var i=0; i<usersList.length; i++){
 				var userFullName = usersList[i].first_name + " " + usersList[i].last_name;
-				// if(userFullName === thisUser.full_name) {
-				// 	continue;
-				// }
 				var str = '<li><div class="userBox">';
 				str += '<div class="userBoxName">' + userFullName + '</div></li>';
 				$(str).appendTo($('.users'));
@@ -105,13 +114,57 @@
 			}
 		});
 
+		var timeouts = {};
+		msgSocket.on('cli_typing', function(data) {
+			var user = JSON.parse(data).user;
+			addTyping(user);
+			if(timeouts[user.user_name]) {
+				clearTimeout(timeouts[user.user_name]);
+			} else {
+				addTyping(user);
+			}
+			timeouts[user.user_name] = setTimeout(function() {
+				deleteTyping(user);
+				timeouts[user.user_name] = undefined;
+			}, 2000);
+		});
+
+		var typingUsers = {};
+		function addTyping(user) {
+			if(!typingUsers[user.user_name]) {
+				typingUsers[user.user_name] = user;
+				updateTypingUI();
+			}
+		}
+
+		function updateTypingUI() {
+			var str = "";
+			for(var userName in typingUsers) {
+				var currUser = typingUsers[userName];
+				if(!!currUser) {
+					str = '<li>';
+					str += '<div>';
+					str += currUser.full_name + " is typing...";
+					str += '</div>';
+					str += '</li>';
+				}
+			}
+			$('.typing-notification').html(str)
+		}
+
+		function deleteTyping(user) {
+			if(!!typingUsers[user.user_name]) {
+				typingUsers[user.user_name] = undefined;
+				updateTypingUI();
+			}
+		}
+
 		msgSocket.on('cli_updateOnlineUsers', function(data) {
 			updateUsersList(data);
 		});
 
-		msgSocket.on('cli_message', function(data){
+		msgSocket.on('cli_message', function(data) {
 			var dataObject = JSON.parse(data);
-			console.log(dataObject);
 			var senderFullName = dataObject.user.first_name + " " + dataObject.user.last_name;
 			addMessage(senderFullName, dataObject.message, dataObject.datetime);
 		});
@@ -131,14 +184,13 @@
 		</div>
 
 		<div class="gc-messages">
+			<ul class="typing-notification">
+			</ul>
 			<ul class="messages">
 			</ul>
 		</div>
 		<div class="gc-users">
 			<div class="userBox">
-				<!-- <div class="userBoxName">
-					{{user.first_name}} {{user.last_name}}
-				</div> -->
 			</div>
 			<ul class="users">
 

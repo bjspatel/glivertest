@@ -8,6 +8,7 @@ module.exports = function(io, onlineUsers) {
 		socket.on("srv_postConnect", function(data) {
 
 			onlineUsers.addUser(data.user);
+			socket.user = onlineUsers.getUser(data.user.user_name);
 			socket.emit('cli_updateOnlineUsers', onlineUsers.getAllUsers());
 
 			new MessageModel()
@@ -65,16 +66,18 @@ module.exports = function(io, onlineUsers) {
 			});
 		});
 
-	    socket.on('srv_disconnect', function (data) {
-			data = !!data ? data : socket;
-			onlineUsers.removeUser(data.user);
+		socket.on("srv_typing", function(data) {
+			var user = onlineUsers.getUser(data);
+			socket.broadcast.emit("cli_typing", JSON.stringify({ user: user }));
+		});
+
+	    socket.on('disconnect', function () {
+			onlineUsers.removeUser(socket.user);
 			var leftData = {
-				'message':	(data.user.first_name + " " + data.user.last_name + " has left the room."),
+				'message':	(socket.user.first_name + " " + socket.user.last_name + " has left the room."),
 				'type': 	'userStatus',
 				'users': 	onlineUsers.getAllUsers()
 			};
-			console.log("LEFT DATA");
-			console.log(leftData);
 			socket.broadcast.emit("cli_notification", JSON.stringify(leftData));
 	    });
 	});
