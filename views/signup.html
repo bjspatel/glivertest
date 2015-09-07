@@ -1,0 +1,44 @@
+<html>
+<head>
+	<title>{{title}}</title>
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.2/css/bootstrap.min.css"> <!-- load bootstrap css -->
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.min.css"> <!-- load fontawesome -->
+</head>
+<body>
+	<div class="container">
+		<div class="col-sm-6 col-sm-offset-3">
+			<h1><span class="fa fa-sign-in"> Sign up</span></h1>
+				{{#message}}
+		    		<div class="alert alert-danger">{{message}}</div>
+		    	{{/message}}
+			<form method="post">
+				<div class="form-group">
+					<label>First Name: </label>
+					<input type="text" id="firstname" name="firstname" class="form-control"/>
+				</div>
+				<div class="form-group">
+					<label>Last Name: </label>
+					<input type="text" id="lastname" name="lastname" class="form-control"/>
+				</div>
+				<div class="form-group">
+					<label>User name: </label>
+					<input type="text" id="username" name="username" class="form-control"/>
+				</div>
+				<div class="form-group">
+					<label>Password: </label>
+					<input type="password" id="password" name="password" class="form-control"/>
+				</div>
+				<div class="form-group">
+					<input type="Submit" value="Sign up" class="btn btn-warning btn-lg"/>
+					<a href="/signin" class="btn btn-warning btn-lg">Cancel</a>
+				</div>
+			</form>
+			<hr>
+			<div>
+			    <p>Already have an account? <a href="/signin">Sign-in</a></p>
+	    		<p>Or go <a href="/">home</a>.</p>
+			</div>
+		</div>
+	</div>
+</body>
+</html>

@@ -1,0 +1,30 @@
+<html>
+<head>
+	<title>
+		Profile
+	</title>
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.2/css/bootstrap.min.css"> <!-- load bootstrap css -->
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.min.css"> <!-- load fontawesome -->
+
+</head>
+<body>
+	<div class="container">
+		<div class="page-header text-center">
+			<h1><span class="fa fa-anchor"> Profile Page</span></h1>
+			<a href="/logout" class="btn btn-default btn-sm">Logout</a>
+		</div>
+		<div class="row">
+			<div class="col-sm-6">
+				<div class="well">
+					<h3><span class="fa fa-user"></span> {{user.username}} </h3>
+					<p>
+						<strong>First name: </strong> {{user.firstname}}<br/>
+						<strong>Last name: </strong> {{user.lastname}}<br/>
+						<strong>User name: </strong> {{user.username}}<br/>
+					</p>
+				</div>
+			</div>
+		</div>
+	</div>
+</body>
+</html>

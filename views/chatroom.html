@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Group Chat</title>
+	<link rel="stylesheet" href="../css/chatroom.css"/>
+	<script src="//code.jquery.com/jquery-1.11.0.min.js"></script>
+	<script src="/socket.io/socket.io.js"></script>
+	<script>
+	$(function() {
+		var host 		= '{{config.host}}',
+			msgSocket 	= io.connect(host + '/nsMessages'),
+			thisUser 	= {
+				first_name:	'{{user.first_name}}',
+				last_name: 	'{{user.last_name}}',
+				user_name: 	'{{user.user_name}}',
+				full_name: 	'{{user.first_name}} {{user.last_name}}'
+			},
+			ctrlPressed = false;
+
+		$("#signout").click(function(e) {
+			if(this.id === "signout") {
+				if(confirm("Are you sure you want to sign out?") === false) {
+					return;
+				}
+			}
+			msgSocket.emit('srv_disconnect', {'user': thisUser});
+		});
+
+		$(document).on('keydown', '.newmessage', function(e) {
+			if(e.which === 17) {
+				ctrlPressed = true;
+			}
+		});
+
+		$(document).on('keyup', '.newmessage', function(e){
+
+			if(e.which === 13 && !ctrlPressed && $(this).val() != ''){
+				msgSocket.emit('srv_message', {
+					user:		thisUser,
+					message:	$(this).val()
+				});
+				addMessage(thisUser.full_name, $(this).val());
+				$(this).val('');
+			} else if(e.which === 17) {
+				ctrlPressed = false;
+				$(this).val($(this).val() + "\n");
+			}
+		});
+
+		function addNotification(message) {
+			var str = '<li><div class="msgbox">';
+				str += '<div class="msgNotification">' + message + '</div>';
+				str += '</div></li>';
+			$(str).hide().prependTo($('.messages')).slideDown(100);
+		}
+
+		function addMessage(senderFullName, message, datetime) {
+			if(!datetime) {
+				datetime = new Date().toISOString();
+			}
+			var str = '<li>';
+				str += '<div class="msgbox">';
+				str += '<div class="msgsender">' + senderFullName + '</div>';
+				str += '<div class="msg">' + message.replace(/\n/g, "<br>") + '</div>';
+				str += '<div class="msgdatetime">' + datetime.replace(/T/, "<br>").replace(/\..+/, "") + '</div>';
+				str += '</div>';
+				str += '</li>';
+			$(str).hide().prependTo($('.messages')).slideDown(100);
+		}
+
+		function updateUsersList(usersList) {
+			$('.users').html('');
+			for(var i=0; i<usersList.length; i++){
+				var userFullName = usersList[i].first_name + " " + usersList[i].last_name;
+				// if(userFullName === thisUser.full_name) {
+				// 	continue;
+				// }
+				var str = '<li><div class="userBox">';
+				str += '<div class="userBoxName">' + userFullName + '</div></li>';
+				$(str).appendTo($('.users'));
+			}
+		};
+
+		msgSocket.on('connect', function() {
+			msgSocket.emit('srv_postConnect', {'user': thisUser});
+		});
+
+		msgSocket.on('cli_addOldMessages', function(data) {
+			var messages = JSON.parse(data);
+			for(var i=0; i<messages.length; i++) {
+				addMessage(
+					messages[i].user.first_name + ' ' + messages[i].user.last_name,
+					messages[i].message,
+					messages[i].datetime
+				);
+			}
+		});
+
+		msgSocket.on('cli_notification', function(data) {
+			var dataObject = JSON.parse(data);
+			addNotification(dataObject.message);
+			if(dataObject.type === 'userStatus') {
+				updateUsersList(dataObject.users);
+			}
+		});
+
+		msgSocket.on('cli_updateOnlineUsers', function(data) {
+			updateUsersList(data);
+		});
+
+		msgSocket.on('cli_message', function(data){
+			var dataObject = JSON.parse(data);
+			console.log(dataObject);
+			var senderFullName = dataObject.user.first_name + " " + dataObject.user.last_name;
+			addMessage(senderFullName, dataObject.message, dataObject.datetime);
+		});
+	})
+	</script>
+</head>
+<body>
+	<div class="gc-container">
+		<h1 class="gc-title">Group Chat</h1>
+		<div class="gc-userbox">
+			<h5 class="userName" style="float:left;">{{user.first_name}} {{user.last_name}}</h5>
+			<h5 class="userName" style="float:right;"><a id="signout" href="/signout">Sign out</a></h5>
+		</div>
+		<div class="gc-roomname">Group Chat</div>
+		<div class="gc-newmessage">
+			<textarea class="newmessage" autocomplete="off" placeholder="Type in your message and press enter !"></textarea>
+		</div>
+
+		<div class="gc-messages">
+			<ul class="messages">
+			</ul>
+		</div>
+		<div class="gc-users">
+			<div class="userBox">
+				<!-- <div class="userBoxName">
+					{{user.first_name}} {{user.last_name}}
+				</div> -->
+			</div>
+			<ul class="users">
+
+			</ul>
+		</div>
+	</div>
+</body>
+</html>
